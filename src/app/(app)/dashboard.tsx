@@ -63,7 +63,7 @@ export function Dashboard({
             equipa.
           </Notice>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {mine.map((channel) => (
               <ChannelCard key={channel.id} channel={channel} unread={unread[channel.id] ?? 0} />
             ))}
@@ -76,7 +76,7 @@ export function Dashboard({
           <h2 id="outros-canais" className="text-lg font-bold">
             Outros canais <span className="text-sm font-normal text-ink-faint">(acesso de administrador)</span>
           </h2>
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {others.map((channel) => (
               <ChannelCard key={channel.id} channel={channel} unread={0} />
             ))}
@@ -133,7 +133,7 @@ function PhaseCard() {
 
 function ChannelCard({ channel, unread }: { channel: DashboardChannel; unread: number }) {
   return (
-    <li>
+    <li className="min-w-0">
       <Link
         href={`/canais/${channel.slug}`}
         className={`flex min-h-20 items-center gap-4 rounded-2xl border bg-surface-1 p-4 transition-colors hover:bg-surface-2 ${

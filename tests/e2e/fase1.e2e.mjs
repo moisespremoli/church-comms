@@ -152,8 +152,17 @@ try {
   await send(bruno, unreadText);
   await carla.getByRole("link", { name: /PALCO ↔ MESA.*1 por ler/ }).waitFor({ timeout: 10000 });
   ok(true, "painel mostra 1 mensagem por ler em tempo real");
+  // Sinal luminoso em ecrã inteiro com a mensagem.
+  const flash = carla.getByRole("alertdialog");
+  await flash.waitFor({ timeout: 10000 });
+  ok((await flash.getByText(unreadText).count()) === 1, "sinal luminoso mostra a mensagem em ecrã inteiro");
+  ok(await flash.getByRole("heading", { name: "PALCO ↔ MESA" }).isVisible(), "sinal luminoso indica o canal");
+  await carla.waitForTimeout(700);
+  await shot(carla, "mobile-sinal-luminoso");
   const markedRead = carla.waitForResponse((r) => r.url().includes("/rpc/mark_channel_read") && r.ok());
-  await carla.getByRole("link", { name: /PALCO ↔ MESA/ }).click();
+  await flash.getByRole("button", { name: "Ver mensagem" }).click();
+  await carla.waitForURL(`${BASE}/canais/palco-mesa`);
+  ok(!(await carla.getByRole("alertdialog").count()), "'Ver mensagem' abre o canal e fecha o sinal");
   await messageLocator(carla, unreadText).waitFor();
   await markedRead;
   await carla.goto(`${BASE}/`);

@@ -69,6 +69,8 @@ export function ChannelView({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Mensagens de outras pessoas que acabaram de chegar (destaque temporário).
+  const [freshIds, setFreshIds] = useState<Set<string>>(() => new Set());
 
   const messagesRef = useRef(messages);
   const namesRef = useRef(names);
@@ -187,6 +189,16 @@ export function ChannelView({
     const unsubscribe = hub.subscribe(channel.id, {
       onMessage: (row) => {
         setMessages((current) => mergeMessages(current, [fromServer(row)]));
+        if (row.author_id !== me.id) {
+          setFreshIds((ids) => new Set(ids).add(row.id));
+          setTimeout(() => {
+            setFreshIds((ids) => {
+              const next = new Set(ids);
+              next.delete(row.id);
+              return next;
+            });
+          }, 5000);
+        }
         void resolveNames([row.author_id]);
         if (row.author_id !== me.id) scheduleMarkRead();
       },
@@ -338,6 +350,7 @@ export function ChannelView({
                   isOwn={message.author_id === me.id}
                   grouped={Boolean(grouped)}
                   onRetry={retry}
+                  fresh={freshIds.has(message.id)}
                 />
               );
             })}
@@ -366,18 +379,20 @@ function MessageItem({
   isOwn,
   grouped,
   onRetry,
+  fresh,
 }: {
   message: ChatMessage;
   authorName: string;
   isOwn: boolean;
   grouped: boolean;
   onRetry: (message: ChatMessage) => void;
+  fresh: boolean;
 }) {
   return (
     <li
       className={`flex gap-3 rounded-xl px-2 ${grouped ? "py-0.5" : "mt-2 py-1.5"} ${
         message.status === "failed" ? "bg-red-500/10" : isOwn ? "bg-surface-1" : ""
-      }`}
+      } ${fresh ? "cc-msg-new" : ""}`}
     >
       <div className="w-10 shrink-0">{grouped ? null : <Avatar name={authorName} />}</div>
       <div className="min-w-0 flex-1">

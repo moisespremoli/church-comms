@@ -30,6 +30,8 @@ type HubValue = {
   onlineUsers: OnlineUser[];
   unread: Record<string, number>;
   subscribe: (channelId: string, listener: Listener) => () => void;
+  /** Recebe todas as mensagens novas de todos os canais subscritos. */
+  subscribeAll: (listener: (message: MessageRow) => void) => () => void;
   setActiveChannel: (channelId: string | null) => void;
   clearUnread: (channelId: string) => void;
 };
@@ -63,6 +65,7 @@ export function RealtimeHubProvider({
   const [browserOnline, setBrowserOnline] = useState(true);
 
   const listeners = useRef(new Map<string, Set<Listener>>());
+  const globalListeners = useRef(new Set<(message: MessageRow) => void>());
   const activeChannel = useRef<string | null>(null);
   const channelKey = channelIds.join(",");
 
@@ -106,6 +109,7 @@ export function RealtimeHubProvider({
             if (!message || message.channel_id !== channelId) return;
 
             listeners.current.get(channelId)?.forEach((l) => l.onMessage?.(message));
+            globalListeners.current.forEach((l) => l(message));
 
             const isOwn = message.author_id === userId;
             const isViewing =
@@ -202,6 +206,13 @@ export function RealtimeHubProvider({
     };
   }, []);
 
+  const subscribeAll = useCallback((listener: (message: MessageRow) => void) => {
+    globalListeners.current.add(listener);
+    return () => {
+      globalListeners.current.delete(listener);
+    };
+  }, []);
+
   const setActiveChannel = useCallback((channelId: string | null) => {
     activeChannel.current = channelId;
   }, []);
@@ -211,8 +222,8 @@ export function RealtimeHubProvider({
   }, []);
 
   const value = useMemo<HubValue>(
-    () => ({ connection, onlineUsers, unread, subscribe, setActiveChannel, clearUnread }),
-    [connection, onlineUsers, unread, subscribe, setActiveChannel, clearUnread],
+    () => ({ connection, onlineUsers, unread, subscribe, subscribeAll, setActiveChannel, clearUnread }),
+    [connection, onlineUsers, unread, subscribe, subscribeAll, setActiveChannel, clearUnread],
   );
 
   return <HubContext value={value}>{children}</HubContext>;

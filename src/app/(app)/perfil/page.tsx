@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AlertSettings } from "./alert-settings";
 import { PasswordForm, ProfileForm } from "./forms";
 import { InstallHint } from "@/components/pwa/install-hint";
 import { requireUser, ROLE_LABELS } from "@/lib/auth";
@@ -17,6 +18,14 @@ export default async function ProfilePage() {
       </header>
 
       <InstallHint />
+
+      <section className="space-y-4 rounded-2xl border border-line bg-surface-1 p-5">
+        <div>
+          <h2 className="text-lg font-bold">Alertas neste dispositivo</h2>
+          <p className="text-sm text-ink-faint">Como este aparelho avisa quando chega uma mensagem nova.</p>
+        </div>
+        <AlertSettings />
+      </section>
 
       <section className="space-y-4 rounded-2xl border border-line bg-surface-1 p-5">
         <h2 className="text-lg font-bold">Dados pessoais</h2>

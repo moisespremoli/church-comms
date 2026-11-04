@@ -4,6 +4,7 @@ import { House, LogOut, Settings, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { MessageFlash } from "@/components/alerts/message-flash";
 import { ChannelGlyph } from "@/components/channel-glyph";
 import { ConnectionBanner } from "@/components/realtime/connection-banner";
 import { RealtimeHubProvider, useRealtimeHub } from "@/components/realtime/realtime-hub";
@@ -42,6 +43,7 @@ export function AppShell({
           <BottomNav isAdmin={user.role === "admin"} />
         </div>
       </div>
+      <MessageFlash myId={user.id} channels={channels} />
     </RealtimeHubProvider>
   );
 }
