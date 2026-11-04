@@ -1,0 +1,43 @@
+import type { NextConfig } from "next";
+
+// Cache Components desativado: praticamente todos os ecrãs dependem da sessão
+// e de dados em tempo real por utilizador, por isso não há um "static shell"
+// útil a pré-renderizar. Mantém o modelo de renderização dinâmica clássico.
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    // Microfone reservado para a Fase 3 (áudio), apenas na própria origem.
+    value: "camera=(), geolocation=(), microphone=(self)",
+  },
+];
+
+const nextConfig: NextConfig = {
+  cacheComponents: false,
+  poweredByHeader: false,
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
+  async headers() {
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
