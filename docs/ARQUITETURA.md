@@ -7,7 +7,7 @@ entregue na Fase 1, como foi testado, o que falta e o que tem de ser configurado
 
 | Item | Encontrado |
 | --- | --- |
-| Repositório | `Hello-World`: README de aula, `site-exemplo/index.html` (HTML estático) e `plugins/one-knob-phatter` (protótipo HTML) |
+| Repositório de origem | `Hello-World` (a app foi depois extraída para o repositório próprio `church-comms`): README de aula, `site-exemplo/index.html` (HTML estático) e `plugins/one-knob-phatter` (protótipo HTML) |
 | Package manager / framework | Nenhum |
 | Variáveis de ambiente / integrações | Nenhuma |
 | Conclusão | Não havia stack estabelecida, por isso usou-se a stack recomendada. A app vive em `church-comms/`, isolada do resto do repositório, que não foi alterado. |

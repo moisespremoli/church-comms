@@ -62,7 +62,10 @@ Os emails locais (recuperação de palavra-passe, convites) aparecem no Mailpit:
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
    (só servidor) e `NEXT_PUBLIC_SITE_URL`.
 8. **Primeiro administrador**: `node --env-file=.env.local scripts/create-admin.mjs <email> "<Nome>" "<palavra-passe>"`.
-9. Hospedar a app Next.js com HTTPS (requisito da PWA), por exemplo Vercel ou um servidor Node.
+9. Hospedar a app Next.js com HTTPS (requisito da PWA). O repositório inclui `railway.json` para o
+   Railway (projeto `church-comms`): ligar este repositório a um serviço, definir as variáveis do passo 7
+   (as `NEXT_PUBLIC_*` são lidas no build) e gerar um domínio. Depois, usar esse domínio em
+   `NEXT_PUBLIC_SITE_URL` e nas *Redirect URLs* do Supabase.
 
 ## Scripts
 
