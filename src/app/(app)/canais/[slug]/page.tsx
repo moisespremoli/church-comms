@@ -15,7 +15,7 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
   // RLS: só devolve o canal se o utilizador o puder ver.
   const { data: channel } = await supabase
     .from("channels")
-    .select("id, slug, name, description, icon, color, status, is_emergency")
+    .select("id, slug, name, description, icon, color, status, is_emergency, has_voice_room")
     .eq("slug", slug)
     .maybeSingle();
   if (!channel) notFound();

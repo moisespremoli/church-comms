@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronLeft, Clock, Loader, RotateCw, Search, SendHorizontal, TriangleAlert, Users, X } from "lucide-react";
+import { Check, ChevronLeft, Clock, Loader, Radio, RotateCw, Search, SendHorizontal, TriangleAlert, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ChannelGlyph } from "@/components/channel-glyph";
@@ -39,6 +39,7 @@ type ChannelInfo = {
   color: string;
   status: "active" | "archived";
   is_emergency: boolean;
+  has_voice_room: boolean;
 };
 
 const SYNC_LIMIT = 200;
@@ -289,6 +290,15 @@ export function ChannelView({
             <h1 className="truncate text-lg font-bold">{channel.name}</h1>
             <p className="truncate text-xs text-ink-faint">{channel.description}</p>
           </div>
+          {channel.has_voice_room ? (
+            <Link
+              href={`/radio/${channel.slug}`}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent px-3 text-sm font-bold text-surface-0"
+            >
+              <Radio className="size-5" aria-hidden />
+              <span>Rádio</span>
+            </Link>
+          ) : null}
           <button
             type="button"
             onClick={() => setSearchOpen((v) => !v)}

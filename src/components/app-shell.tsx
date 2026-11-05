@@ -1,6 +1,6 @@
 "use client";
 
-import { House, LogOut, Settings, ShieldCheck, User } from "lucide-react";
+import { House, LogOut, Radio, Settings, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -92,6 +92,7 @@ function Sidebar({ user, channels }: { user: ShellUser; channels: ChannelSummary
 
       <nav aria-label="Principal" className="flex flex-col gap-1 px-3">
         {navItem("/", "Painel", House)}
+        {navItem("/radio", "Rádio", Radio)}
         {user.role === "admin" ? navItem("/admin", "Administração", ShieldCheck) : null}
       </nav>
 
@@ -150,6 +151,7 @@ function BottomNav({ isAdmin }: { isAdmin: boolean }) {
 
   const items = [
     { href: "/", label: "Painel", Icon: House, badge: totalUnread },
+    { href: "/radio", label: "Rádio", Icon: Radio, badge: 0 },
     { href: "/perfil", label: "Perfil", Icon: Settings, badge: 0 },
     ...(isAdmin ? [{ href: "/admin", label: "Admin", Icon: ShieldCheck, badge: 0 }] : []),
   ];

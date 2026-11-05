@@ -177,6 +177,12 @@ export type Database = {
           },
         ];
       };
+      ptt_floor: {
+        Row: { channel_id: string; speaker_id: string | null; granted_at: string | null; expires_at: string | null };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       activity_logs: {
         Row: ActivityLogRow;
         Insert: never;
@@ -205,6 +211,19 @@ export type Database = {
         Returns: { channel_id: string; unread: number; last_message_at: string | null }[];
       };
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      can_post: { Args: { p_channel_id: string }; Returns: boolean };
+      can_preempt_floor: { Args: { p_channel_id: string }; Returns: boolean };
+      request_floor: {
+        Args: { p_channel_id: string; p_preempt?: boolean };
+        Returns: {
+          granted: boolean;
+          speaker_id: string | null;
+          previous_speaker_id: string | null;
+          expires_at: string | null;
+          reason: "granted" | "renewed" | "expired" | "preempted" | "busy" | "max_duration";
+        }[];
+      };
+      release_floor: { Args: { p_channel_id: string }; Returns: boolean };
     };
     Enums: {
       app_role: AppRole;

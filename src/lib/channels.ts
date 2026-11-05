@@ -62,8 +62,9 @@ export type ChannelSummary = {
   color: string;
   status: "active" | "archived";
   is_emergency: boolean;
+  has_voice_room: boolean;
   sort_order: number;
 };
 
 export const CHANNEL_SUMMARY_COLUMNS =
-  "id, slug, name, description, icon, color, status, is_emergency, sort_order" as const;
+  "id, slug, name, description, icon, color, status, is_emergency, has_voice_room, sort_order" as const;

@@ -115,3 +115,31 @@ body {
     box-shadow: inset 4px 0 0 rgb(56 189 248);
   }
 }
+
+/* ── Rádio / Push-to-Talk ─────────────────────────────────────────────────── */
+@keyframes cc-radio-live {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cc-flash-rgb) / 0.6); background-color: rgb(var(--cc-flash-rgb) / 0.35); }
+  50% { box-shadow: 0 0 40px 12px rgb(var(--cc-flash-rgb) / 0.6); background-color: rgb(var(--cc-flash-rgb) / 0.55); }
+}
+.cc-radio-live {
+  border-color: rgb(var(--cc-flash-rgb));
+  animation: cc-radio-live 1.2s ease-in-out infinite;
+}
+@keyframes cc-ptt-talking {
+  0%, 100% { box-shadow: 0 0 0 10px rgb(248 113 113 / 0.35), 0 0 60px 20px rgb(239 68 68 / 0.6); }
+  50% { box-shadow: 0 0 0 22px rgb(248 113 113 / 0.2), 0 0 90px 30px rgb(239 68 68 / 0.8); }
+}
+.cc-ptt {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+.cc-ptt-talking {
+  animation: cc-ptt-talking 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-radio-live,
+  .cc-ptt-talking {
+    animation: none !important;
+  }
+  .cc-radio-live { background-color: rgb(var(--cc-flash-rgb) / 0.45); }
+}

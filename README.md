@@ -6,7 +6,9 @@ tablet e computador.
 
 > **Estado: Fase 1 (Fundamentos) concluída.** Autenticação, perfis, papéis, equipas, canais, membros,
 > mensagens em tempo real, painel, administração, auditoria e PWA.
-> Alertas (Fase 2), áudio (Fase 3) e operação/produção (Fase 4) ainda **não** estão implementados.
+> Já existe também o **sinal luminoso** de novas mensagens e o **rádio Push-to-Talk**
+> (walkie-talkie sobre LiveKit; precisa das credenciais LiveKit para funcionar).
+> Alertas com confirmação (Fase 2), chamadas individuais e operação/produção (Fase 4) ainda **não** estão feitos.
 > Detalhes, decisões e limitações em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
 O Church Comms **não substitui** os meios oficiais de emergência (112) nem os procedimentos de
@@ -94,6 +96,19 @@ src/domains/             contratos das fases seguintes (alertas, áudio, notific
 public/sw.js             Service Worker
 tests/unit, tests/e2e    testes
 ```
+
+## Rádio (walkie-talkie)
+
+- Ecrã **Rádio** → escolher o canal → **Ligar rádio** → manter o botão grande carregado para falar.
+- Só uma pessoa fala de cada vez por canal. O turno é decidido na base de dados (`request_floor`) e o
+  servidor só dá permissão de microfone no LiveKit a quem o tem. O turno expira 30 s depois do último
+  sinal do aparelho e nunca dura mais de 2 min seguidos.
+- Administradores e responsáveis do canal podem ativar **Falar com prioridade** para interromper um
+  membro comum.
+- Para ouvir, o ecrã do rádio tem de estar aberto: com o ecrã bloqueado o telemóvel (sobretudo o iPhone)
+  pode cortar o áudio de uma PWA.
+- Configuração: criar um projeto em https://cloud.livekit.io e definir `LIVEKIT_URL`, `LIVEKIT_API_KEY` e
+  `LIVEKIT_API_SECRET` no servidor (Railway → Variables).
 
 ## Papéis
 
