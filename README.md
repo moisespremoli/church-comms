@@ -79,6 +79,7 @@ Os emails locais (recuperação de palavra-passe, convites) aparecem no Mailpit:
 | `npm test` | Testes unitários (Vitest) |
 | `npm run test:db` | Aplica as migrações numa BD descartável e corre os testes de RLS (`PG_ADMIN_URL=...`) |
 | `node --env-file=.env.local tests/e2e/fase1.e2e.mjs` | E2E com Playwright contra o Supabase **local** e a app em `:3000` |
+| `node --env-file=.env.local tests/e2e/radio.e2e.mjs` | E2E do rádio com áudio real (precisa de LiveKit e de uma rede que deixe passar WebRTC) |
 | `node scripts/generate-icons.mjs` | Regenera os ícones PWA a partir de `scripts/icon.svg` |
 
 ## Estrutura
