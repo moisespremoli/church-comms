@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Loader, Mic, Radio, Volume2, WifiOff } from "lucide-react";
+import { ChevronLeft, Loader, Mic, Radio, Volume2, VolumeX, WifiOff } from "lucide-react";
 import {
   ConnectionState,
   Room,
@@ -65,6 +65,10 @@ export function RadioView({
   const [speaker, setSpeaker] = useState<{ id: string; name: string } | null>(null);
   const [listeners, setListeners] = useState<{ id: string; name: string }[]>([]);
   const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string } | null>(null);
+  // O browser bloqueou a reprodução de áudio (precisa de um toque do utilizador).
+  const [audioBlocked, setAudioBlocked] = useState(false);
+  // Nível do sinal recebido (0–1) de quem está a falar.
+  const [level, setLevel] = useState(0);
 
   // ── Estado da sala ────────────────────────────────────────────────────────
   const refreshRoomState = useCallback(() => {
@@ -126,7 +130,16 @@ export function RadioView({
 
   // ── Ligar / desligar ─────────────────────────────────────────────────────
   const connect = useCallback(async () => {
+    // IMPORTANTE: tudo o que desbloqueia o som tem de acontecer AQUI, no próprio
+    // toque, antes de qualquer "await" — senão o iPhone/Android bloqueia o áudio.
     unlockAudio();
+    const room = new Room({
+      adaptiveStream: true,
+      dynacast: true,
+      audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    roomRef.current = room;
+    void room.startAudio().catch(() => {});
     setNotice(null);
     setPhase("connecting");
     try {
@@ -152,15 +165,16 @@ export function RadioView({
       };
       if (!response.ok || !grant.url || !grant.token) throw new Error(grant.error ?? "Não foi possível ligar ao rádio.");
 
-      const room = new Room({ adaptiveStream: true, dynacast: true, audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-      roomRef.current = room;
-
       room
         .on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
           if (track.kind === Track.Kind.Audio) {
-            const el = track.attach();
+            const el = track.attach() as HTMLAudioElement;
             el.setAttribute("data-radio-audio", "");
+            el.setAttribute("playsinline", "");
+            el.autoplay = true;
+            el.volume = 1;
             audioBox.current?.appendChild(el);
+            el.play().catch(() => setAudioBlocked(true));
           }
           refreshRoomState();
         })
@@ -186,6 +200,7 @@ export function RadioView({
             }
           }
         })
+        .on(RoomEvent.AudioPlaybackStatusChanged, () => setAudioBlocked(!room.canPlaybackAudio))
         .on(RoomEvent.Reconnecting, () => setPhase("reconnecting"))
         .on(RoomEvent.Reconnected, () => {
           setPhase("ready");
@@ -199,6 +214,7 @@ export function RadioView({
 
       await room.connect(grant.url, grant.token);
       await room.startAudio().catch(() => {});
+      setAudioBlocked(!room.canPlaybackAudio);
       setCanTalk(Boolean(grant.canTalk));
       setCanPreempt(Boolean(grant.canPreempt));
       setPhase("ready");
@@ -209,6 +225,8 @@ export function RadioView({
         wakeLock.current = await navigator.wakeLock?.request("screen");
       } catch {}
     } catch (error) {
+      void room.disconnect();
+      roomRef.current = null;
       setPhase("offline");
       setNotice({ tone: "error", text: error instanceof Error ? error.message : "Não foi possível ligar ao rádio." });
     }
@@ -333,6 +351,27 @@ export function RadioView({
     };
   }, [stopTalking]);
 
+  // Medidor do sinal recebido: confirma visualmente que o áudio está a chegar.
+  useEffect(() => {
+    if (!speaker) {
+      setLevel(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      const p = roomRef.current?.remoteParticipants.get(speaker.id);
+      setLevel(Math.min(1, (p?.audioLevel ?? 0) * 3));
+    }, 100);
+    return () => clearInterval(timer);
+  }, [speaker]);
+
+  const enableSound = useCallback(() => {
+    unlockAudio();
+    const room = roomRef.current;
+    if (!room) return;
+    void room.startAudio().then(() => setAudioBlocked(!room.canPlaybackAudio)).catch(() => {});
+    audioBox.current?.querySelectorAll("audio").forEach((el) => void el.play().catch(() => {}));
+  }, []);
+
   // ── Interface ─────────────────────────────────────────────────────────────
   const meTalking = talk === "talking";
   const busy = !meTalking && Boolean(speaker);
@@ -375,7 +414,8 @@ export function RadioView({
         </Link>
       </header>
 
-      <div ref={audioBox} className="hidden" aria-hidden />
+      {/* Fora do ecrã mas não "display:none", para nenhum browser recusar tocar. */}
+      <div ref={audioBox} aria-hidden className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px overflow-hidden" />
 
       <section className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
         {!configured ? (
@@ -393,6 +433,16 @@ export function RadioView({
           </button>
         ) : (
           <>
+            {audioBlocked ? (
+              <button
+                type="button"
+                onClick={enableSound}
+                className="flex min-h-20 w-full items-center justify-center gap-3 rounded-3xl bg-amber-400 px-4 text-xl font-black text-surface-0"
+              >
+                <VolumeX className="size-8" aria-hidden /> O som está bloqueado — toque aqui para ouvir
+              </button>
+            ) : null}
+
             {/* Quem está a falar */}
             <div
               role="status"
@@ -409,6 +459,10 @@ export function RadioView({
                     <Volume2 className="size-5" aria-hidden /> A falar
                   </p>
                   <p className="mt-1 truncate text-3xl font-black text-ink">{speaker.name}</p>
+                  <div className="mx-auto mt-3 h-3 w-full max-w-xs overflow-hidden rounded-full bg-surface-0/60" aria-hidden>
+                    <div className="h-full rounded-full bg-ink transition-[width] duration-100" style={{ width: `${Math.round(level * 100)}%` }} />
+                  </div>
+                  <p className="mt-1 text-xs text-ink">{level > 0.02 ? "Sinal de áudio a chegar" : "À espera de som…"}</p>
                 </>
               ) : (
                 <p className="text-2xl font-bold text-ink-muted">Canal livre</p>
@@ -424,6 +478,7 @@ export function RadioView({
                 disabled={phase !== "ready"}
                 onPointerDown={(e) => {
                   e.preventDefault();
+                  enableSound();
                   e.currentTarget.setPointerCapture(e.pointerId);
                   void startTalking();
                 }}
